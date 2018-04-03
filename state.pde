@@ -1,10 +1,9 @@
-import java.util.*; //<>// //<>// //<>// //<>// //<>// //<>//
+ //<>//
 public class State {
   float V_MAX=3.0;
   float SPRING_DISTANCE=50;
+  float DIA=10; //DIEAMETER was already used
 
-
-  String orginal="";
   String marbels="";
   int hash=0;
 
@@ -14,31 +13,31 @@ public class State {
   PVector vel=new PVector(0, 0);
   boolean movable=true;
   boolean marked=false;
+
   boolean prevPressed=false;
   boolean active=false;
 
   State(String s) {
     pos=new PVector(random(width), random(height));
     vel=new PVector(0.0f, 0.0f);
-    marbels=s;
-    orginal=s;
 
-    marbels=genHashCode(marbels);
+    marbels=s;
+
+    marbels = genHashCode(marbels);
     hash = marbels.hashCode();
-    neighbours=new HashSet<State>();
+    neighbours = new HashSet<State>();
   }
 
   State(String s, float x, float y) {
     pos=new PVector(x, y);
-    movable=false;
     vel=new PVector(0.0f, 0.0f);
-    marbels=s;
-    orginal=s;
 
-    marbels=genHashCode(marbels);
+    movable = false;    
+    marbels = s;
+
+    marbels = genHashCode(marbels);
     hash = marbels.hashCode();
-
-    neighbours=new HashSet<State>();
+    neighbours = new HashSet<State>();
   }
 
   String toString() {
@@ -62,7 +61,7 @@ public class State {
   public boolean overCircle() {
     float disX = pos.x - mouseX;
     float disY = pos.y - mouseY;
-    if (sqrt(sq(disX) + sq(disY)) < 10/2 ) {
+    if (sq(disX) + sq(disY) < sq(DIA/2) ) {
       return true;
     } else {
       return false;
@@ -74,29 +73,27 @@ public class State {
   }
 
   void displayInfo() {
+    //Mark all neighbours
     for (State s : neighbours) {
       s.mark();
     }
 
     float h=20;  
-    if (pos.x+(1+marbels.length())*10>width) {
-      h=-(1+marbels.length())*10;
+    if (pos.x + (1+marbels.length()) * DIA > width) {
+      h =- (1+marbels.length()) * DIA;
     }
+
     pushMatrix();
     translate(h, 20);
     fill(0);
     stroke(0);
-    rect(pos.x-5, pos.y-5, 50+(1+marbels.length())*10, 50);
+    rect(pos.x-5, pos.y-5, 50+(1+marbels.length())*DIA, 50);
 
     drawMarbles(this.marbels, pos.x, pos.y);
 
     fill(255);
-    text(marbels, pos.x+5, pos.y+20);
-    text(hash, pos.x+5, pos.y+30);
-
-    stroke(255);
-    strokeWeight(0.8);
-
+    text("Marbels:" + marbels, pos.x+5, pos.y+20);
+    text("Hash:" +hash, pos.x+5, pos.y+33);
 
     popMatrix();
   } 
@@ -105,11 +102,12 @@ public class State {
     if (active)return;
 
     float attr=0;
-    if (mouseMode) {
-      attr=(mouseX-width/2);
-    }else {
+    if (GESURE_MODE) {
+      attr=(mouseX-width/4);
+    } else {
       attr=50;
     }
+
     PVector acc=new PVector(0, 0);
     for (int i=0; i<all.length; i++) {
       State s = all[i];
@@ -131,8 +129,8 @@ public class State {
       vel.sub(acc);
     }
 
-    if (mouseMode) {
-      attr=(mouseY)/10.0f;
+    if (GESURE_MODE) {
+      attr=(mouseY-height/2)/10.0f;
     } else {
       attr=5;
     }
@@ -166,7 +164,6 @@ public class State {
   void draw() {
     if (movable) {
       pos.add(vel);
-
       fill(255);
     } else {
       fill(255, 255, 0);
@@ -174,26 +171,23 @@ public class State {
 
     if (overCircle()&&mousePressed&&prevPressed==false) {
       active=true;
-      movable=!movable;
+      if (PIN_MODE)movable=!movable;
     }
     if (mousePressed==false&&prevPressed) {
       active=false;
     }
-
     prevPressed=mousePressed;
-
+    
+    strokeWeight(1);
+    stroke(255);
     if (active) {
       noFill();
-      stroke(255);
-      strokeWeight(1);
       ellipse(pos.x, pos.y, 20, 20);
 
       pos.x=constrain(mouseX, 0, width);
       pos.y=constrain(mouseY, 0, height);
     }
 
-    stroke(255);
-    strokeWeight(1);
     ellipse(pos.x, pos.y, marked?12:10, marked?12:10);
     marked=false;
   }

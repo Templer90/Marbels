@@ -1,6 +1,4 @@
-import java.util.*;  //<>// //<>//
-
-StateMap states;
+StateMap states; //<>//
 Pathfinder pathfinder;
 
 String ALPHABET="012";
@@ -11,12 +9,10 @@ int NUM_MARBLES=RED_MARBELS+BLUE_MARBELS;
 String START="21212";
 String END="22211";
 boolean MIRRORING=false;
-
-
-
+boolean PIN_MODE=false;
 
 boolean untagle=true;
-boolean mouseMode=false;
+boolean GESURE_MODE=false;
 boolean setup5=true;
 
 void setUp5() {
@@ -66,21 +62,20 @@ void setup() {
   }
 
   permutation(new char[(NUM_MARBLES+4)], 0, ALPHABET);
-  neighburs();
+  genNeighbours();
 
-  pathfinder=new Pathfinder(states);
-
+  pathfinder = new Pathfinder(states);
   pathfinder.find(states.get(START), states.get(END));
 }
 
-
-
 void keyPressed() {
-  if (key==' ') {
+  if (key=='s') {
     untagle=!untagle;
   }
-
-  if (key=='n') {
+  if (key=='p') {
+    PIN_MODE=!PIN_MODE;
+  }
+  if (key=='a') {
     setup5=!setup5;
     setup();
   }
@@ -88,8 +83,8 @@ void keyPressed() {
     MIRRORING=!MIRRORING;
     setup();
   }
-    if (key=='j') {
-    mouseMode=!mouseMode;
+  if (key=='g') {
+    GESURE_MODE=!GESURE_MODE;
   }
 }
 
@@ -100,7 +95,20 @@ void checkAndInsert(String a, State s) {
   }
 }
 
-void neighburs() {
+String glue(int l, String[] arr, String val) {
+  String s="";
+  for (int i=0; i<l; i++) {
+    s=s+arr[i]+"0";
+  }
+  s=s+val;
+  for (int i=l+1; i<arr.length; i++) {
+    s=s+"0"+arr[i];
+  }
+
+  return s;
+}
+
+void genNeighbours() {
   String n;
   String a="";
   String b="";
@@ -135,6 +143,7 @@ void neighburs() {
       }
     }
 
+    //Rearrange
     String[] split=n.split("0");
     for (int i=0; i<split.length; i++) {
       if (split[i].length()>2) {
@@ -153,18 +162,7 @@ void neighburs() {
   }
 }
 
-String glue(int l, String[] arr, String val) {
-  String s="";
-  for (int i=0; i<l; i++) {
-    s=s+arr[i]+"0";
-  }
-  s=s+val;
-  for (int i=l+1; i<arr.length; i++) {
-    s=s+"0"+arr[i];
-  }
 
-  return s;
-}
 
 String insert(String bag, String marble, int index) {
   String bagBegin = bag.substring(0, index);
@@ -177,11 +175,28 @@ void draw() {
   background(0);
   stroke(255);
   strokeWeight(1);
+  float w=width/4;
 
-  State h=null;
+  if (GESURE_MODE) {
+    //attr=(mouseX-width/2);
+    stroke(32);
+    for (int i=0; i<height; i+=20) {
+      line(0, i, width, i);
+    }
+    for (int i=0; i<width; i+=20) {
+      line(i, 0, i, height);
+    }
+    
+    stroke(64);
+    strokeWeight(2);
+    line(w+50, 0, w+50, height);
+    line(0, 50+height/2, width,50+height/2);
+  }
+
+  State h = null;
   State[] all=states.getAll();
-  
-  
+  int op=255;
+
   for (State s : all ) {
     if (untagle) {
       s.attract(all);
@@ -190,8 +205,6 @@ void draw() {
 
     if (s.overCircle())h=s;
 
-    strokeWeight(1);
-    int op=255;
     for (State p : s.neighbours ) {
       if (pathfinder.inPath(s, p)) {
         strokeWeight(3);
@@ -203,21 +216,43 @@ void draw() {
 
       if (p.neighbour(s)) {
         stroke(255, 0, 255, op);
-        line(p.pos.x, p.pos.y, s.pos.x, s.pos.y);
       } else {
         stroke(255, op);
-        line(p.pos.x, p.pos.y, s.pos.x, s.pos.y);
       }
+      line(p.pos.x, p.pos.y, s.pos.x, s.pos.y);
     }
 
     s.draw();
   }
 
-  if (h!=null)h.displayInfo();
-
+  if (h != null)h.displayInfo();
   pathfinder.find(states.get(START), (h!=null)?h:states.get(END));
 
   drawSteps(states.get(START), (h!=null)?h:states.get(END) );
+  drawLegend();
+}
+
+void drawLegend() {
+  String[] text={"(S)imulate", "(M)irroring", "(G)esture Mode", "(P)inMode"};
+  boolean[] flags={untagle, MIRRORING, GESURE_MODE, PIN_MODE};
+  float th=11;
+  float w=width-100;
+  float h=height-(text.length+1)*th;
+
+  fill(255);
+  if (setup5) {
+    text("5 M(a)rbels", w, h);
+  } else {
+    text("6 M(a)rbels", w, h);
+  } 
+  for (int i=0; i<text.length; i++) {
+    if (flags[i]) {
+      fill(255);
+    } else {
+      fill(255, 128);
+    }
+    text(text[i], w, h+(i+1)*th);
+  }
 }
 
 void drawSteps(State start, State end) {
@@ -233,17 +268,14 @@ void drawSteps(State start, State end) {
     drawMarbles(s.marbels, 20, x );
     s=path.get(s);
     if (s!=null) {
-      drawMarbles(s.marbels, 20+( NUM_MARBLES+2)*10, x );
+      drawMarbles(s.marbels, 20+( NUM_MARBLES+3)*10, x );
+      fill(255);
+      text("->", 11+( NUM_MARBLES+2)*10, x+(h/2));
     }
 
     fill(255);
     text(step++, 9, x+(h/2));
     x+=h;
-  }
-  if (s!=null) {
-    fill(255);
-    text(step, 9, x+(h/2));
-    drawMarbles(s.marbels, 20, x );
   }
 }
 
@@ -300,7 +332,7 @@ boolean check(char[] input) {
         return false;
       }
 
-      //kein 00
+      //No 00
       if ((input[i]=='0')&&((input[i+1]=='0')||(input[i-1]=='0'))) {
         return false;
       }

@@ -6,7 +6,7 @@ class StateMap {
 
   StateMap(int i) {
     states = new HashMap(i);
-    onlyStates=new ArrayList<State>();
+    onlyStates=new ArrayList<State>(i);
   }
 
   void insert(State s) {
@@ -26,7 +26,7 @@ class StateMap {
     if (s!=null) {
       return s;
     } else {
-      return this.get(genHashCode(ds));
+      return states.get(genHashCode(ds));
     }
   }
 

@@ -20,8 +20,7 @@ class Pathfinder {
 
   private StateMap map;
   private HashMap<State, State> path;
-
-  private HashMap<State, State>prev;
+  private HashMap<State, State> prev;
 
   private State prev_start; 
   private State prev_end;
@@ -34,7 +33,8 @@ class Pathfinder {
   void find(State start, State end) {
     State u;
 
-    if (!end.equals(prev_start)) {
+    //Same start as before? If Not: rebuild Mesh
+    if (!start.equals(prev_start)) {
       prev=new HashMap<State, State>();
       HashMap<State, Integer> dist=new HashMap<State, Integer>();
       PriorityQueue<entry> Q=new PriorityQueue<entry>();
@@ -63,9 +63,9 @@ class Pathfinder {
         }
       }
     }
-    
-    
     prev_start=start; 
+    
+    //Same END as before? If Yes: Nothing to do
     if (end.equals(prev_end)) {
       return;
     }
