@@ -1,76 +1,13 @@
-<!DOCTYPE HTML>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-    <title>Master</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta http-equiv="Content-Language" content="en-us">
-
-    <link href="fancy.css" rel="stylesheet" type="text/css">
-</head>
-
-<body>
-<input type="file" id="file-input" /><button id="file-save" >Save</button><button id="test" >test</button>
-<div>
-    <textarea id="code" placeholder="Code"></textarea>
-    <br>
-    <textarea id="assembled" placeholder="Assembled"></textarea>
-</div>
-
-<script type="text/javascript" src="jquery.min.js"></script>
-<script type="text/javascript" src="jquery-ui-1.10.4.js"></script>
-<script type="text/javascript" src="main.js"></script>
-<script type="text/javascript" src="opcodes.js"></script>
-
-<script>
-    $("#code").on('input', function (e)
-    {
-        $("#assembled").val(translateToBytes($("#code").val()));
-    });
-    
-    $("#file-save").on('click', function (e)
-    {
-        let f=$("#file-input").val();
-        let st=f.lastIndexOf("\\")+1;
-        let en=f.lastIndexOf(".");
-        let fileName =f.substring(st,en)+".compiled";
-
-        let codeDiv=$('#code');
-        codeDiv.trigger("input");
-        $.ajax({
-            url: "http://localhost:8080",
-            type: "POST", 
-            data: { 
-                code: translateToBytes(codeDiv.val()),
-                file: "./"+fileName
-            },
-            error: function(xhr) {
-                console.log(xhr);
-                alert(xhr.statusText);
-            }
-        });
-    });
-    
-    $("#test").on('click', function (e)
-    {
-       console.log(genJava());
-    });
-    
-    $("#file-input").on('change', function (e)
-    {
-        let file = e.target.files[0];
-        if (!file) {
-            return;
-        }
-
-        $('#code').val("");
-        let reader = new FileReader();
-        reader.onload = function(e) {
-            let contents = e.target.result;
-            $('#code').val(contents);
-            $('#code').trigger("input");
-        };
-        reader.readAsText(file);
-    });
-</script>
+      <title>Hello Web - Processing.js Test</title>
+      <script src="https://raw.githubusercontent.com/processing-js/processing-js/v1.4.8/processing.min.js"></script>
+  </head>
+  
+   <body>
+      <h1>Processing.js Test</h1>
+      <p>This is my first Processing.js web-based sketch:</p>
+     <canvas data-processing-sources="./../Marbels.pde"></canvas>
 </body>
-</html> 
+</html>
